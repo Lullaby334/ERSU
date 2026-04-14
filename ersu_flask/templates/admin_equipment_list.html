@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Админ — оборудование{% endblock %}
+{% block content %}
+<section class="card">
+    <div class="section-head">
+        <h1>Управление оборудованием</h1>
+        <a class="btn" href="{{ url_for('admin_equipment_new') }}">Добавить оборудование</a>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Категория</th>
+                    <th>Лаборатория</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in equipment %}
+                    <tr>
+                        <td>#{{ item.id }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.category }}</td>
+                        <td>{{ item.laboratory }}</td>
+                        <td><span class="status {{ item.status|lower }}">{{ item.status }}</span></td>
+                        <td>
+                            <div class="action-stack">
+                                <a class="btn btn-secondary" href="{{ url_for('admin_equipment_edit', equipment_id=item.id) }}">Редактировать</a>
+                                <form method="post" action="{{ url_for('admin_equipment_toggle', equipment_id=item.id) }}">
+                                    <button class="btn btn-danger" type="submit">Переключить статус</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6">Оборудование отсутствует.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

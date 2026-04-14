@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Админ — пользователи{% endblock %}
+{% block content %}
+<section class="card">
+    <h1>Пользователи и роли</h1>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Имя</th>
+                    <th>Email</th>
+                    <th>Текущая роль</th>
+                    <th>Изменить</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>#{{ user.id }}</td>
+                        <td>{{ user.full_name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.role }}</td>
+                        <td>
+                            <form method="post" action="{{ url_for('admin_user_role', user_id=user.id) }}" class="inline-form">
+                                <select name="role">
+                                    {% for role in roles %}
+                                        <option value="{{ role }}" {% if user.role == role %}selected{% endif %}>{{ role }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button class="btn btn-secondary" type="submit">Сменить роль</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5">Пользователи отсутствуют.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

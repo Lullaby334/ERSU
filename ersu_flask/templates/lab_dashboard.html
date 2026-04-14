@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}Панель лаборатории{% endblock %}
+{% block content %}
+<section class="card">
+    <h1>Панель лаборатории</h1>
+    <p class="muted">Подтверждение заявок, выдача и прием возвратов.</p>
+</section>
+
+<section class="card">
+    <h2>Заявки на подтверждение</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Пользователь</th>
+                    <th>Оборудование</th>
+                    <th>Период</th>
+                    <th>Решение</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in pending_reservations %}
+                    <tr>
+                        <td>#{{ r.id }}</td>
+                        <td>{{ r.user.full_name }}</td>
+                        <td>{{ r.equipment.name }}</td>
+                        <td>{{ r.start_at.strftime('%d.%m.%Y %H:%M') }} — {{ r.end_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td>
+                            <div class="action-stack">
+                                <form method="post" action="{{ url_for('approve_reservation', reservation_id=r.id) }}">
+                                    <button class="btn" type="submit">Подтвердить</button>
+                                </form>
+                                <form method="post" action="{{ url_for('reject_reservation', reservation_id=r.id) }}" class="inline-form">
+                                    <input type="text" name="decision_note" placeholder="Причина отказа">
+                                    <button class="btn btn-danger" type="submit">Отклонить</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5">Нет ожидающих заявок.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Подтвержденные заявки для выдачи</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Пользователь</th>
+                    <th>Оборудование</th>
+                    <th>Период</th>
+                    <th>Выдача</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in approved_reservations %}
+                    <tr>
+                        <td>#{{ r.id }}</td>
+                        <td>{{ r.user.full_name }}</td>
+                        <td>{{ r.equipment.name }}</td>
+                        <td>{{ r.start_at.strftime('%d.%m.%Y %H:%M') }} — {{ r.end_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td>
+                            {% if r.loan %}
+                                Уже выдано
+                            {% else %}
+                                <form method="post" action="{{ url_for('checkout_reservation', reservation_id=r.id) }}">
+                                    <button class="btn" type="submit">Выдать</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5">Нет подтвержденных заявок.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Активные выдачи</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Оборудование</th>
+                    <th>Пользователь</th>
+                    <th>Срок возврата</th>
+                    <th>Прием возврата</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for loan in active_loans %}
+                    <tr>
+                        <td>#{{ loan.id }}</td>
+                        <td>{{ loan.equipment.name }}</td>
+                        <td>{{ loan.reservation.user.full_name }}</td>
+                        <td>{{ loan.due_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td>
+                            <form method="post" action="{{ url_for('checkin_loan', loan_id=loan.id) }}" class="inline-form">
+                                <input type="text" name="condition_note" placeholder="Состояние / заметки">
+                                <select name="equipment_status">
+                                    <option value="AVAILABLE">AVAILABLE</option>
+                                    <option value="OUT_OF_SERVICE">OUT_OF_SERVICE</option>
+                                </select>
+                                <button class="btn" type="submit">Принять возврат</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5">Нет активных выдач.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

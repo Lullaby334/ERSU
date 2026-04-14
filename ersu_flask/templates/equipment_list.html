@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Каталог{% endblock %}
+{% block content %}
+<section class="card">
+    <div class="section-head">
+        <h1>Каталог оборудования</h1>
+    </div>
+    <form method="get" class="filters-grid">
+        <input type="text" name="q" placeholder="Поиск по названию, серийному номеру или описанию" value="{{ filters.q }}">
+        <select name="category">
+            <option value="">Все категории</option>
+            {% for c in categories %}
+                <option value="{{ c }}" {% if filters.category == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+        <select name="laboratory">
+            <option value="">Все лаборатории</option>
+            {% for lab in laboratories %}
+                <option value="{{ lab }}" {% if filters.laboratory == lab %}selected{% endif %}>{{ lab }}</option>
+            {% endfor %}
+        </select>
+        <select name="status">
+            <option value="">Любой статус</option>
+            {% for s in statuses %}
+                <option value="{{ s }}" {% if filters.status == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn" type="submit">Фильтровать</button>
+    </form>
+</section>
+
+<section class="grid cards-grid">
+    {% for item in equipment %}
+        <article class="card equipment-card">
+            <div class="equipment-thumb">
+                {% if item.image_url %}
+                    <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                {% else %}
+                    <div class="placeholder">{{ item.category }}</div>
+                {% endif %}
+            </div>
+            <div class="equipment-meta">
+                <h3>{{ item.name }}</h3>
+                <p><strong>Категория:</strong> {{ item.category }}</p>
+                <p><strong>Лаборатория:</strong> {{ item.laboratory }}</p>
+                <p><strong>Серийный номер:</strong> {{ item.serial_number }}</p>
+                <span class="status {{ item.status|lower }}">{{ item.status }}</span>
+            </div>
+            <a class="btn btn-secondary" href="{{ url_for('equipment_detail', equipment_id=item.id) }}">Открыть</a>
+        </article>
+    {% else %}
+        <div class="card empty">Ничего не найдено.</div>
+    {% endfor %}
+</section>
+{% endblock %}

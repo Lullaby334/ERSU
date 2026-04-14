@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Админ — форма оборудования{% endblock %}
+{% block content %}
+<section class="card narrow">
+    <h1>{% if item %}Редактировать{% else %}Добавить{% endif %} оборудование</h1>
+    <form method="post" class="form-grid">
+        <label>Название
+            <input type="text" name="name" value="{{ item.name if item else '' }}" required>
+        </label>
+        <label>Категория
+            <input type="text" name="category" value="{{ item.category if item else '' }}" required>
+        </label>
+        <label>Лаборатория
+            <input type="text" name="laboratory" value="{{ item.laboratory if item else '' }}" required>
+        </label>
+        <label>Серийный номер
+            <input type="text" name="serial_number" value="{{ item.serial_number if item else '' }}" required>
+        </label>
+        <label>URL изображения
+            <input type="text" name="image_url" value="{{ item.image_url if item else '' }}">
+        </label>
+        <label>Статус
+            <select name="status">
+                {% for status in statuses %}
+                    <option value="{{ status }}" {% if item and item.status == status %}selected{% endif %}>{{ status }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Описание
+            <textarea name="description" rows="5">{{ item.description if item else '' }}</textarea>
+        </label>
+        <button class="btn" type="submit">Сохранить</button>
+    </form>
+</section>
+{% endblock %}

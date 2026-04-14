@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}{{ equipment.name }}{% endblock %}
+{% block content %}
+<section class="detail-grid">
+    <article class="card">
+        <h1>{{ equipment.name }}</h1>
+        <p><strong>Категория:</strong> {{ equipment.category }}</p>
+        <p><strong>Лаборатория:</strong> {{ equipment.laboratory }}</p>
+        <p><strong>Серийный номер:</strong> {{ equipment.serial_number }}</p>
+        <p><strong>Статус:</strong> <span class="status {{ equipment.status|lower }}">{{ equipment.status }}</span></p>
+        <p>{{ equipment.description or 'Описание пока не добавлено.' }}</p>
+        {% if equipment.image_url %}
+            <img class="detail-image" src="{{ equipment.image_url }}" alt="{{ equipment.name }}">
+        {% endif %}
+    </article>
+
+    <article class="card">
+        <h2>Создать бронирование</h2>
+        {% if current_user.is_authenticated %}
+            <form method="post" class="form-grid">
+                <label>Начало
+                    <input type="datetime-local" name="start_at" required>
+                </label>
+                <label>Окончание
+                    <input type="datetime-local" name="end_at" required>
+                </label>
+                <label>Цель использования
+                    <input type="text" name="purpose" placeholder="Например: лабораторная работа">
+                </label>
+                <button class="btn" type="submit">Отправить заявку</button>
+            </form>
+        {% else %}
+            <p class="muted">Чтобы забронировать оборудование, сначала войди в систему.</p>
+            <a class="btn" href="{{ url_for('login') }}">Войти</a>
+        {% endif %}
+    </article>
+</section>
+
+<section class="card">
+    <h2>Календарь занятости</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Период</th>
+                    <th>Статус</th>
+                    <th>Пользователь</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reservations %}
+                    <tr>
+                        <td>#{{ r.id }}</td>
+                        <td>{{ r.start_at.strftime('%d.%m.%Y %H:%M') }} — {{ r.end_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td><span class="status {{ r.status|lower }}">{{ r.status }}</span></td>
+                        <td>{{ r.user.full_name }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4">Пока нет заявок для этого оборудования.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

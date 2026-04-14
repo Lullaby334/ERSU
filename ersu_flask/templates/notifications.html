@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Уведомления{% endblock %}
+{% block content %}
+<section class="card">
+    <h1>Уведомления</h1>
+    <div class="stack">
+        {% for item in items %}
+            <article class="notification {% if item.is_read %}read{% endif %}">
+                <div>
+                    <h3>{{ item.title }}</h3>
+                    <p>{{ item.message }}</p>
+                    <small>{{ item.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                </div>
+                {% if not item.is_read %}
+                    <form method="post" action="{{ url_for('mark_notification_read', notification_id=item.id) }}">
+                        <button class="btn btn-secondary" type="submit">Отметить как прочитанное</button>
+                    </form>
+                {% endif %}
+            </article>
+        {% else %}
+            <div class="empty">Пока нет уведомлений.</div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

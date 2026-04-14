@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}ERSU{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="site-header">
+    <div class="container nav">
+        <a class="brand" href="{{ url_for('index') }}">ERSU</a>
+        <nav>
+            <a href="{{ url_for('equipment_list') }}">Каталог</a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('my_reservations') }}">Мои заявки</a>
+                <a href="{{ url_for('notifications') }}">Уведомления</a>
+                {% if current_user.role in ['LAB_STAFF', 'ADMIN'] %}
+                    <a href="{{ url_for('lab_dashboard') }}">Лаборатория</a>
+                {% endif %}
+                {% if current_user.role == 'ADMIN' %}
+                    <a href="{{ url_for('admin_equipment_list') }}">Админ</a>
+                    <a href="{{ url_for('admin_users') }}">Пользователи</a>
+                {% endif %}
+                <a href="{{ url_for('logout') }}">Выход</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Войти</a>
+                <a href="{{ url_for('register') }}">Регистрация</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+
+<main class="container page">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-stack">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <p>ERSU — System Rezerwacji Sprzętu Uczelnianego</p>
+    </div>
+</footer>
+</body>
+</html>

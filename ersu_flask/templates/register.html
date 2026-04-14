@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Регистрация{% endblock %}
+{% block content %}
+<section class="form-wrap card narrow">
+    <h1>Регистрация</h1>
+    <form method="post" class="form-grid">
+        <label>Полное имя
+            <input type="text" name="full_name" required>
+        </label>
+        <label>Email
+            <input type="email" name="email" required>
+        </label>
+        <label>Пароль
+            <input type="password" name="password" required>
+        </label>
+        <label>Роль
+            <select name="role">
+                {% for role in roles %}
+                    <option value="{{ role }}">{{ role }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button class="btn" type="submit">Создать аккаунт</button>
+    </form>
+</section>
+{% endblock %}
