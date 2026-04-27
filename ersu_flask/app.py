@@ -37,7 +37,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
-login_manager.login_message = "Сначала войди в систему."
+login_manager.login_message = "Najpierw zaloguj się do systemu."
 login_manager.login_message_category = "warning"
 
 
@@ -308,7 +308,7 @@ def register():
         role = request.form.get("role", Role.STUDENT)
 
         if not full_name or not email or not password:
-            flash("Заполни все обязательные поля.", "danger")
+            flash("Wypełnij wszystkie wymagane pola.", "danger")
             return render_template("register.html", roles=[Role.STUDENT, Role.EMPLOYEE])
 
         if role not in [Role.STUDENT, Role.EMPLOYEE]:
@@ -316,7 +316,7 @@ def register():
 
         existing = User.query.filter_by(email=email).first()
         if existing:
-            flash("Пользователь с таким email уже существует.", "danger")
+            flash("Użytkownik z takim adresem e-mail już istnieje.", "danger")
             return render_template("register.html", roles=[Role.STUDENT, Role.EMPLOYEE])
 
         user = User(full_name=full_name, email=email, role=role)
@@ -324,7 +324,7 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        flash("Аккаунт создан. Теперь войди в систему.", "success")
+        flash("Konto zostało utworzone. Teraz możesz się zalogować.", "success")
         return redirect(url_for("login"))
 
     return render_template("register.html", roles=[Role.STUDENT, Role.EMPLOYEE])
@@ -341,15 +341,15 @@ def login():
         user = User.query.filter_by(email=email).first()
 
         if not user or not user.check_password(password):
-            flash("Неверный email или пароль.", "danger")
+            flash("Nieprawidłowy e-mail lub hasło.", "danger")
             return render_template("login.html")
 
         if not user.is_active_account:
-            flash("Аккаунт заблокирован.", "danger")
+            flash("Konto jest zablokowane.", "danger")
             return render_template("login.html")
 
         login_user(user)
-        flash(f"С возвращением, {user.full_name}!", "success")
+        flash(f"Witaj ponownie, {user.full_name}!", "success")
         return redirect(url_for("index"))
 
     return render_template("login.html")
@@ -359,7 +359,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash("Ты вышел из системы.", "info")
+    flash("Zostałeś wylogowany z systemu.", "info")
     return redirect(url_for("index"))
 
 
@@ -413,7 +413,7 @@ def equipment_detail(equipment_id):
 
     if request.method == "POST":
         if not current_user.is_authenticated:
-            flash("Для бронирования нужно войти в систему.", "warning")
+            flash("Aby dokonać rezerwacji, należy się zalogować.", "warning")
             return redirect(url_for("login"))
 
         if current_user.role not in [Role.STUDENT, Role.EMPLOYEE, Role.LAB_STAFF, Role.ADMIN]:
@@ -424,15 +424,15 @@ def equipment_detail(equipment_id):
         purpose = request.form.get("purpose", "").strip()
 
         if equipment.status == EquipmentStatus.OUT_OF_SERVICE:
-            flash("Этот предмет сейчас недоступен для бронирования.", "danger")
+            flash("To urządzenie jest obecnie niedostępne do rezerwacji.", "danger")
             return redirect(url_for("equipment_detail", equipment_id=equipment.id))
 
         if not start_at or not end_at or end_at <= start_at:
-            flash("Проверь дату и время бронирования.", "danger")
+            flash("Sprawdź datę i godzinę rezerwacji.", "danger")
             return redirect(url_for("equipment_detail", equipment_id=equipment.id))
 
         if has_conflict(equipment.id, start_at, end_at):
-            flash("Выбранный интервал занят. Выбери другое время.", "danger")
+            flash("Wybrany termin jest zajęty. Wybierz inny przedział czasu.", "danger")
             return redirect(url_for("equipment_detail", equipment_id=equipment.id))
 
         status = ReservationStatus.PENDING
@@ -448,13 +448,13 @@ def equipment_detail(equipment_id):
         equipment.status = EquipmentStatus.RESERVED
         create_notification(
             current_user.id,
-            "Создана новая заявка",
-            f"Резервация для {equipment.name} создана на период {start_at:%d.%m.%Y %H:%M} - {end_at:%d.%m.%Y %H:%M}.",
+            "Utworzono nową rezerwację",
+            f"Rezerwacja dla {equipment.name} została utworzona na okres {start_at:%d.%m.%Y %H:%M} - {end_at:%d.%m.%Y %H:%M}.",
         )
         log_action("RESERVATION_CREATED", "reservation", details=f"equipment={equipment.id}")
         db.session.commit()
 
-        flash("Заявка создана. Она ожидает подтверждения лаборатории.", "success")
+        flash("Rezerwacja została utworzona i oczekuje na zatwierdzenie laboratorium.", "success")
         return redirect(url_for("my_reservations"))
 
     reservations = (
@@ -496,10 +496,10 @@ def cancel_reservation(reservation_id):
     if reservation.user_id != current_user.id and not current_user.has_role(Role.ADMIN, Role.LAB_STAFF):
         abort(403)
     if reservation.status not in [ReservationStatus.PENDING, ReservationStatus.APPROVED]:
-        flash("Эту резервацию уже нельзя отменить.", "warning")
+        flash("Tej rezerwacji nie można już anulować.", "warning")
         return redirect(url_for("my_reservations"))
     if reservation.start_at <= datetime.utcnow():
-        flash("Нельзя отменить резервацию после начала периода.", "warning")
+        flash("Nie można anulować rezerwacji po rozpoczęciu terminu.", "warning")
         return redirect(url_for("my_reservations"))
 
     reservation.status = ReservationStatus.CANCELLED
@@ -507,12 +507,12 @@ def cancel_reservation(reservation_id):
         reservation.equipment.status = EquipmentStatus.AVAILABLE
     create_notification(
         reservation.user_id,
-        "Резервация отменена",
-        f"Резервация #{reservation.id} была отменена.",
+        "Rezerwacja anulowana",
+        f"Rezerwacja nr {reservation.id} została anulowana.",
     )
     log_action("RESERVATION_CANCELLED", "reservation", reservation.id)
     db.session.commit()
-    flash("Резервация отменена.", "success")
+    flash("Rezerwacja została anulowana.", "success")
     return redirect(url_for("my_reservations"))
 
 
@@ -570,10 +570,10 @@ def approve_reservation(reservation_id):
     if not reservation:
         abort(404)
     if reservation.status != ReservationStatus.PENDING:
-        flash("Резервация уже обработана.", "warning")
+        flash("Rezerwacja została już obsłużona.", "warning")
         return redirect(url_for("lab_dashboard"))
     if has_conflict(reservation.equipment_id, reservation.start_at, reservation.end_at, exclude_id=reservation.id):
-        flash("Нельзя подтвердить: найден конфликт по времени.", "danger")
+        flash("Nie można zatwierdzić rezerwacji: wykryto konflikt terminów.", "danger")
         return redirect(url_for("lab_dashboard"))
 
     reservation.status = ReservationStatus.APPROVED
@@ -581,12 +581,12 @@ def approve_reservation(reservation_id):
     reservation.equipment.status = EquipmentStatus.RESERVED
     create_notification(
         reservation.user_id,
-        "Резервация подтверждена",
-        f"Заявка #{reservation.id} на {reservation.equipment.name} была подтверждена.",
+        "Rezerwacja zatwierdzona",
+        f"Rezerwacja nr {reservation.id} dla sprzętu {reservation.equipment.name} została zatwierdzona.",
     )
     log_action("RESERVATION_APPROVED", "reservation", reservation.id)
     db.session.commit()
-    flash("Резервация подтверждена.", "success")
+    flash("Rezerwacja została zatwierdzona.", "success")
     return redirect(url_for("lab_dashboard"))
 
 
@@ -597,22 +597,22 @@ def reject_reservation(reservation_id):
     if not reservation:
         abort(404)
     if reservation.status != ReservationStatus.PENDING:
-        flash("Резервация уже обработана.", "warning")
+        flash("Rezerwacja została już obsłużona.", "warning")
         return redirect(url_for("lab_dashboard"))
 
-    note = request.form.get("decision_note", "Отклонено лабораторией.").strip()
+    note = request.form.get("decision_note", "Odrzucono przez laboratorium.").strip()
     reservation.status = ReservationStatus.REJECTED
     reservation.decision_note = note
     if reservation.equipment.status == EquipmentStatus.RESERVED:
         reservation.equipment.status = EquipmentStatus.AVAILABLE
     create_notification(
         reservation.user_id,
-        "Резервация отклонена",
-        f"Заявка #{reservation.id} отклонена. Причина: {note}",
+        "Rezerwacja odrzucona",
+        f"Rezerwacja nr {reservation.id} została odrzucona. Powód: {note}",
     )
     log_action("RESERVATION_REJECTED", "reservation", reservation.id, note)
     db.session.commit()
-    flash("Резервация отклонена.", "info")
+    flash("Rezerwacja została odrzucona.", "info")
     return redirect(url_for("lab_dashboard"))
 
 
@@ -623,10 +623,10 @@ def checkout_reservation(reservation_id):
     if not reservation:
         abort(404)
     if reservation.status != ReservationStatus.APPROVED:
-        flash("Для выдачи нужна подтвержденная резервация.", "danger")
+        flash("Do wydania sprzętu wymagana jest zatwierdzona rezerwacja.", "danger")
         return redirect(url_for("lab_dashboard"))
     if reservation.loan:
-        flash("Выдача уже зарегистрирована.", "warning")
+        flash("Wydanie zostało już zarejestrowane.", "warning")
         return redirect(url_for("lab_dashboard"))
 
     loan = Loan(
@@ -639,12 +639,12 @@ def checkout_reservation(reservation_id):
     reservation.equipment.status = EquipmentStatus.LOANED
     create_notification(
         reservation.user_id,
-        "Оборудование выдано",
-        f"Для резервации #{reservation.id} зафиксирована выдача. Срок возврата: {reservation.end_at:%d.%m.%Y %H:%M}.",
+        "Sprzęt został wydany",
+        f"Dla rezerwacji nr {reservation.id} zarejestrowano wydanie sprzętu. Termin zwrotu: {reservation.end_at:%d.%m.%Y %H:%M}.",
     )
     log_action("LOAN_CHECKOUT", "loan", details=f"reservation={reservation.id}")
     db.session.commit()
-    flash("Выдача оборудования зафиксирована.", "success")
+    flash("Wydanie sprzętu zostało zarejestrowane.", "success")
     return redirect(url_for("lab_dashboard"))
 
 
@@ -655,7 +655,7 @@ def checkin_loan(loan_id):
     if not loan:
         abort(404)
     if loan.check_in_at is not None:
-        flash("Возврат уже зафиксирован.", "warning")
+        flash("Zwrot został już wcześniej zarejestrowany.", "warning")
         return redirect(url_for("lab_dashboard"))
 
     condition_note = request.form.get("condition_note", "").strip()
@@ -670,12 +670,12 @@ def checkin_loan(loan_id):
 
     create_notification(
         loan.reservation.user_id,
-        "Оборудование возвращено",
-        f"Возврат по резервации #{loan.reservation_id} зарегистрирован. Статус оборудования: {new_status}.",
+        "Sprzęt został zwrócony",
+        f"Zwrot dla rezerwacji nr {loan.reservation_id} został zarejestrowany. Status sprzętu: {new_status}.",
     )
     log_action("LOAN_CHECKIN", "loan", loan.id, condition_note)
     db.session.commit()
-    flash("Возврат оборудования подтвержден.", "success")
+    flash("Zwrot sprzętu został potwierdzony.", "success")
     return redirect(url_for("lab_dashboard"))
 
 
@@ -700,13 +700,13 @@ def admin_equipment_new():
             status=request.form.get("status", EquipmentStatus.AVAILABLE),
         )
         if not item.name or not item.category or not item.laboratory or not item.serial_number:
-            flash("Заполни все обязательные поля.", "danger")
+            flash("Wypełnij wszystkie wymagane pola.", "danger")
             return render_template("admin_equipment_form.html", item=None, statuses=EquipmentStatus.ALL)
 
         db.session.add(item)
         log_action("EQUIPMENT_CREATED", "equipment")
         db.session.commit()
-        flash("Оборудование добавлено.", "success")
+        flash("Sprzęt został dodany.", "success")
         return redirect(url_for("admin_equipment_list"))
 
     return render_template("admin_equipment_form.html", item=None, statuses=EquipmentStatus.ALL)
@@ -731,7 +731,7 @@ def admin_equipment_edit(equipment_id):
             item.status = status
         log_action("EQUIPMENT_UPDATED", "equipment", item.id)
         db.session.commit()
-        flash("Оборудование обновлено.", "success")
+        flash("Dane sprzętu zostały zaktualizowane.", "success")
         return redirect(url_for("admin_equipment_list"))
 
     return render_template("admin_equipment_form.html", item=item, statuses=EquipmentStatus.ALL)
@@ -750,7 +750,7 @@ def admin_equipment_toggle(equipment_id):
     )
     log_action("EQUIPMENT_TOGGLED", "equipment", item.id, item.status)
     db.session.commit()
-    flash("Статус оборудования изменен.", "success")
+    flash("Status sprzętu został zmieniony.", "success")
     return redirect(url_for("admin_equipment_list"))
 
 
@@ -769,23 +769,23 @@ def admin_user_role(user_id):
         abort(404)
     role = request.form.get("role", Role.STUDENT)
     if role not in Role.ALL:
-        flash("Недопустимая роль.", "danger")
+        flash("Niedozwolona rola użytkownika.", "danger")
         return redirect(url_for("admin_users"))
     user.role = role
     log_action("USER_ROLE_UPDATED", "user", user.id, role)
     db.session.commit()
-    flash("Роль пользователя обновлена.", "success")
+    flash("Rola użytkownika została zaktualizowana.", "success")
     return redirect(url_for("admin_users"))
 
 
 @app.errorhandler(403)
 def forbidden(_error):
-    return render_template("error.html", title="403", message="Доступ запрещен."), 403
+    return render_template("error.html", title="403", message="Brak dostępu."), 403
 
 
 @app.errorhandler(404)
 def not_found(_error):
-    return render_template("error.html", title="404", message="Страница не найдена."), 404
+    return render_template("error.html", title="404", message="Nie znaleziono strony."), 404
 
 
 
@@ -796,9 +796,9 @@ def bootstrap_demo_users():
 
     demo_users = [
         (os.getenv("BOOTSTRAP_ADMIN_EMAIL", "admin@ersu.local"), os.getenv("BOOTSTRAP_ADMIN_PASSWORD", "admin123"), "Administrator", Role.ADMIN),
-        (os.getenv("BOOTSTRAP_LAB_EMAIL", "lab@ersu.local"), os.getenv("BOOTSTRAP_LAB_PASSWORD", "lab123"), "Laboratory Staff", Role.LAB_STAFF),
-        (os.getenv("BOOTSTRAP_STUDENT_EMAIL", "student@ersu.local"), os.getenv("BOOTSTRAP_STUDENT_PASSWORD", "student123"), "Student Demo", Role.STUDENT),
-        (os.getenv("BOOTSTRAP_EMPLOYEE_EMAIL", "employee@ersu.local"), os.getenv("BOOTSTRAP_EMPLOYEE_PASSWORD", "employee123"), "Employee Demo", Role.EMPLOYEE),
+        (os.getenv("BOOTSTRAP_LAB_EMAIL", "lab@ersu.local"), os.getenv("BOOTSTRAP_LAB_PASSWORD", "lab123"), "Pracownik laboratorium", Role.LAB_STAFF),
+        (os.getenv("BOOTSTRAP_STUDENT_EMAIL", "student@ersu.local"), os.getenv("BOOTSTRAP_STUDENT_PASSWORD", "student123"), "Student demo", Role.STUDENT),
+        (os.getenv("BOOTSTRAP_EMPLOYEE_EMAIL", "employee@ersu.local"), os.getenv("BOOTSTRAP_EMPLOYEE_PASSWORD", "employee123"), "Pracownik demo", Role.EMPLOYEE),
     ]
 
     changed = False
