@@ -4,39 +4,39 @@
 insert into public.equipment (name, category, laboratory, serial_number, description, image_url, status)
 values
   (
-    'Dell Latitude 5520',
-    'Laptop',
-    'Lab A-101',
-    'DL-5520-001',
-    'Laptop do zajęć laboratoryjnych i projektów studenckich.',
-    'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1200&q=80',
+    'Oscyloskop Rigol DS1054Z',
+    'Aparatura pomiarowa',
+    'Laboratorium Elektroniki A-101',
+    'RIG-DS1054Z-001',
+    'Cyfrowy oscyloskop wykorzystywany podczas zajęć z elektroniki i diagnostyki sygnałów.',
+    'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
     'AVAILABLE'
   ),
   (
-    'Canon EOS 250D',
-    'Camera',
-    'Media Lab B-204',
-    'CAN-250D-002',
-    'Aparat do zajęć multimedialnych i dokumentacji projektów.',
-    'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80',
+    'Multimetr UNI-T UT61E',
+    'Aparatura pomiarowa',
+    'Laboratorium Elektroniki A-101',
+    'UNI-UT61E-002',
+    'Multimetr laboratoryjny do pomiaru napięcia, prądu, rezystancji i ciągłości obwodu.',
+    'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80',
     'AVAILABLE'
   ),
   (
-    'Epson EB-X06',
-    'Projector',
-    'Lab C-110',
-    'EPS-X06-003',
-    'Projektor do prezentacji i zajęć seminaryjnych.',
-    'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1200&q=80',
+    'Zasilacz laboratoryjny Korad KA3005P',
+    'Zasilanie',
+    'Laboratorium Automatyki B-204',
+    'KOR-KA3005P-003',
+    'Programowalny zasilacz laboratoryjny do ćwiczeń z automatyki, elektroniki i sterowania.',
+    'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
     'AVAILABLE'
   ),
   (
-    'Mikrofon Blue Yeti',
-    'Audio',
-    'Podcast Room D-010',
-    'BY-004',
-    'Mikrofon do nagrań i laboratoriów z obróbki dźwięku.',
-    'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=1200&q=80',
+    'Zestaw Arduino Mega 2560',
+    'Mikrokontrolery',
+    'Laboratorium IoT C-110',
+    'ARD-MEGA-004',
+    'Zestaw dydaktyczny do laboratoriów z systemów wbudowanych, IoT i sterowania.',
+    'https://images.unsplash.com/photo-1553406830-ef2513450d76?auto=format&fit=crop&w=1200&q=80',
     'AVAILABLE'
   )
 on conflict (serial_number) do nothing;
