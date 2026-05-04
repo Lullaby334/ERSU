@@ -1,49 +1,76 @@
 {% extends 'base.html' %}
-{% block title %}ERSU — Главная{% endblock %}
+{% block title %}Strona główna | ERSU{% endblock %}
 {% block content %}
-<section class="hero card">
-    <div>
-        <span class="badge">Flask + Supabase PostgreSQL</span>
-        <h1>Система бронирования университетского оборудования</h1>
-        <p>Прототип ERSU для студентов, сотрудников, лаборатории и администратора.</p>
-        <div class="hero-actions">
-            <a class="btn" href="{{ url_for('equipment_list') }}">Открыть каталог</a>
-            {% if not current_user.is_authenticated %}
-                <a class="btn btn-secondary" href="{{ url_for('register') }}">Создать аккаунт</a>
-            {% endif %}
+<div class="p-4 p-md-5 mb-4 bg-white rounded-4 shadow-sm border">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-8">
+      <h1 class="display-6 fw-bold mb-3">System rezerwacji sprzętu uczelnianego</h1>
+      <p class="lead mb-4">ERSU ułatwia wyszukiwanie sprzętu laboratoryjnego, składanie rezerwacji, rejestrowanie wypożyczeń oraz kontrolę zwrotów.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('equipment_list') }}" class="btn btn-primary btn-lg">Przejdź do katalogu</a>
+        {% if not current_user.is_authenticated %}
+          <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">Załóż konto</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="bg-light rounded-4 p-4 border h-100">
+        <h2 class="h5 mb-3">Najważniejsze funkcje</h2>
+        <ul class="mb-0">
+          <li>katalog sprzętu i filtracja</li>
+          <li>sprawdzanie dostępności terminów</li>
+          <li>rezerwacja i zatwierdzanie wniosków</li>
+          <li>wydanie i zwrot sprzętu</li>
+          <li>powiadomienia i historia operacji</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">Liczba sprzętów</div><div class="display-6 fw-bold">{{ stats.equipment_count }}</div></div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">Rezerwacje</div><div class="display-6 fw-bold">{{ stats.reservation_count }}</div></div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">Wypożyczenia</div><div class="display-6 fw-bold">{{ stats.loan_count }}</div></div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">Dostępne teraz</div><div class="display-6 fw-bold">{{ stats.available_count }}</div></div></div>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h4 mb-0">Najnowszy sprzęt</h2>
+  <a href="{{ url_for('equipment_list') }}" class="btn btn-sm btn-outline-primary">Zobacz cały katalog</a>
+</div>
+
+<div class="row g-3">
+  {% for item in newest_equipment %}
+    <div class="col-md-6 col-xl-4">
+      <div class="card h-100 border-0 shadow-sm">
+        {% if item.image_url %}
+          <img src="{{ item.image_url }}" class="card-img-top" alt="{{ item.name }}" style="height: 210px; object-fit: cover;">
+        {% endif %}
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between gap-2 mb-2">
+            <h3 class="h5 mb-0">{{ item.name }}</h3>
+            <span class="badge text-bg-secondary">{{ get_equipment_status_label(item.status) }}</span>
+          </div>
+          <p class="text-muted mb-1"><strong>Kategoria:</strong> {{ item.category }}</p>
+          <p class="text-muted mb-1"><strong>Laboratorium:</strong> {{ item.laboratory }}</p>
+          <p class="text-muted small mb-3">{{ item.description or 'Brak opisu.' }}</p>
+          <a href="{{ url_for('equipment_detail', equipment_id=item.id) }}" class="btn btn-primary mt-auto">Szczegóły</a>
         </div>
+      </div>
     </div>
-</section>
-
-<section class="stats-grid">
-    <article class="card stat-card"><strong>{{ stats.equipment_count }}</strong><span>единиц оборудования</span></article>
-    <article class="card stat-card"><strong>{{ stats.available_count }}</strong><span>доступно сейчас</span></article>
-    <article class="card stat-card"><strong>{{ stats.reservation_count }}</strong><span>всего заявок</span></article>
-    <article class="card stat-card"><strong>{{ stats.loan_count }}</strong><span>история выдач</span></article>
-</section>
-
-<section>
-    <div class="section-head">
-        <h2>Последнее добавленное оборудование</h2>
+  {% else %}
+    <div class="col-12">
+      <div class="alert alert-secondary">Brak sprzętu do wyświetlenia.</div>
     </div>
-    <div class="grid cards-grid">
-        {% for item in newest_equipment %}
-            <article class="card equipment-card">
-                <div class="equipment-thumb">
-                    {% if item.image_url %}
-                        <img src="{{ item.image_url }}" alt="{{ item.name }}">
-                    {% else %}
-                        <div class="placeholder">{{ item.category }}</div>
-                    {% endif %}
-                </div>
-                <h3>{{ item.name }}</h3>
-                <p>{{ item.category }} · {{ item.laboratory }}</p>
-                <span class="status {{ item.status|lower }}">{{ item.status }}</span>
-                <a class="btn btn-secondary" href="{{ url_for('equipment_detail', equipment_id=item.id) }}">Подробнее</a>
-            </article>
-        {% else %}
-            <div class="card empty">Пока нет оборудования. Добавь записи через админ-панель или seed.sql.</div>
-        {% endfor %}
-    </div>
-</section>
+  {% endfor %}
+</div>
 {% endblock %}

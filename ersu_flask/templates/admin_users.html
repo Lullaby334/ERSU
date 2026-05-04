@@ -1,42 +1,51 @@
 {% extends 'base.html' %}
-{% block title %}Админ — пользователи{% endblock %}
+{% block title %}Użytkownicy | ERSU{% endblock %}
 {% block content %}
-<section class="card">
-    <h1>Пользователи и роли</h1>
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Имя</th>
-                    <th>Email</th>
-                    <th>Текущая роль</th>
-                    <th>Изменить</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in users %}
-                    <tr>
-                        <td>#{{ user.id }}</td>
-                        <td>{{ user.full_name }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>{{ user.role }}</td>
-                        <td>
-                            <form method="post" action="{{ url_for('admin_user_role', user_id=user.id) }}" class="inline-form">
-                                <select name="role">
-                                    {% for role in roles %}
-                                        <option value="{{ role }}" {% if user.role == role %}selected{% endif %}>{{ role }}</option>
-                                    {% endfor %}
-                                </select>
-                                <button class="btn btn-secondary" type="submit">Сменить роль</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr><td colspan="5">Пользователи отсутствуют.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<h1 class="h3 mb-4">Użytkownicy</h1>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Imię i nazwisko</th>
+            <th>E-mail</th>
+            <th>Rola</th>
+            <th>Status konta</th>
+            <th>Utworzono</th>
+            <th>Zmiana roli</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+            <tr>
+              <td>#{{ user.id }}</td>
+              <td>{{ user.full_name }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ get_role_label(user.role) }}</td>
+              <td>{{ 'Aktywne' if user.is_active_account else 'Zablokowane' }}</td>
+              <td>{{ user.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+              <td>
+                <form method="post" action="{{ url_for('admin_user_role', user_id=user.id) }}" class="d-flex gap-2">
+                  <select class="form-select form-select-sm" name="role">
+                    {% for role in roles %}
+                      <option value="{{ role }}" {% if user.role == role %}selected{% endif %}>{{ get_role_label(role) }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit" class="btn btn-sm btn-outline-primary">Zapisz</button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">Brak użytkowników do wyświetlenia.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-</section>
+  </div>
+</div>
 {% endblock %}

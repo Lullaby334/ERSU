@@ -1,66 +1,101 @@
 {% extends 'base.html' %}
-{% block title %}{{ equipment.name }}{% endblock %}
+{% block title %}{{ equipment.name }} | ERSU{% endblock %}
 {% block content %}
-<section class="detail-grid">
-    <article class="card">
-        <h1>{{ equipment.name }}</h1>
-        <p><strong>Категория:</strong> {{ equipment.category }}</p>
-        <p><strong>Лаборатория:</strong> {{ equipment.laboratory }}</p>
-        <p><strong>Серийный номер:</strong> {{ equipment.serial_number }}</p>
-        <p><strong>Статус:</strong> <span class="status {{ equipment.status|lower }}">{{ equipment.status }}</span></p>
-        <p>{{ equipment.description or 'Описание пока не добавлено.' }}</p>
-        {% if equipment.image_url %}
-            <img class="detail-image" src="{{ equipment.image_url }}" alt="{{ equipment.name }}">
-        {% endif %}
-    </article>
-
-    <article class="card">
-        <h2>Создать бронирование</h2>
-        {% if current_user.is_authenticated %}
-            <form method="post" class="form-grid">
-                <label>Начало
-                    <input type="datetime-local" name="start_at" required>
-                </label>
-                <label>Окончание
-                    <input type="datetime-local" name="end_at" required>
-                </label>
-                <label>Цель использования
-                    <input type="text" name="purpose" placeholder="Например: лабораторная работа">
-                </label>
-                <button class="btn" type="submit">Отправить заявку</button>
-            </form>
-        {% else %}
-            <p class="muted">Чтобы забронировать оборудование, сначала войди в систему.</p>
-            <a class="btn" href="{{ url_for('login') }}">Войти</a>
-        {% endif %}
-    </article>
-</section>
-
-<section class="card">
-    <h2>Календарь занятости</h2>
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Период</th>
-                    <th>Статус</th>
-                    <th>Пользователь</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for r in reservations %}
-                    <tr>
-                        <td>#{{ r.id }}</td>
-                        <td>{{ r.start_at.strftime('%d.%m.%Y %H:%M') }} — {{ r.end_at.strftime('%d.%m.%Y %H:%M') }}</td>
-                        <td><span class="status {{ r.status|lower }}">{{ r.status }}</span></td>
-                        <td>{{ r.user.full_name }}</td>
-                    </tr>
-                {% else %}
-                    <tr><td colspan="4">Пока нет заявок для этого оборудования.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm h-100">
+      {% if equipment.image_url %}
+        <img src="{{ equipment.image_url }}" class="card-img-top" alt="{{ equipment.name }}" style="height: 320px; object-fit: cover;">
+      {% endif %}
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <h1 class="h3 mb-1">{{ equipment.name }}</h1>
+            <div class="text-muted">{{ equipment.category }} • {{ equipment.laboratory }}</div>
+          </div>
+          <span class="badge text-bg-secondary">{{ get_equipment_status_label(equipment.status) }}</span>
+        </div>
+        <p><strong>Numer seryjny:</strong> {{ equipment.serial_number }}</p>
+        <p class="mb-0">{{ equipment.description or 'Brak dodatkowego opisu sprzętu.' }}</p>
+      </div>
     </div>
-</section>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Nowa rezerwacja</h2>
+        {% if current_user.is_authenticated %}
+          <form method="post" class="row g-3">
+            <div class="col-12">
+              <label for="start_at" class="form-label">Początek rezerwacji</label>
+              <input type="datetime-local" class="form-control" id="start_at" name="start_at" required>
+            </div>
+            <div class="col-12">
+              <label for="end_at" class="form-label">Koniec rezerwacji</label>
+              <input type="datetime-local" class="form-control" id="end_at" name="end_at" required>
+            </div>
+            <div class="col-12">
+              <label for="purpose" class="form-label">Cel rezerwacji</label>
+              <input type="text" class="form-control" id="purpose" name="purpose" placeholder="Np. zajęcia laboratoryjne, projekt, konsultacje">
+            </div>
+            <div class="col-12 d-grid">
+              <button type="submit" class="btn btn-primary">Wyślij wniosek</button>
+            </div>
+          </form>
+        {% else %}
+          <p class="text-muted">Aby utworzyć rezerwację, zaloguj się do systemu.</p>
+          <a href="{{ url_for('login') }}" class="btn btn-primary">Przejdź do logowania</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Wskazówki</h2>
+        <ul class="mb-0">
+          <li>System blokuje nakładające się terminy.</li>
+          <li>Wniosek trafia do zatwierdzenia przez laboratorium.</li>
+          <li>Rezerwację można anulować przed jej rozpoczęciem.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+  <div class="card-body">
+    <h2 class="h5 mb-3">Harmonogram rezerwacji</h2>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Użytkownik</th>
+            <th>Od</th>
+            <th>Do</th>
+            <th>Status</th>
+            <th>Cel</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for reservation in reservations %}
+            <tr>
+              <td>#{{ reservation.id }}</td>
+              <td>{{ reservation.user.full_name }}</td>
+              <td>{{ reservation.start_at.strftime('%d.%m.%Y %H:%M') }}</td>
+              <td>{{ reservation.end_at.strftime('%d.%m.%Y %H:%M') }}</td>
+              <td><span class="badge text-bg-light border">{{ get_reservation_status_label(reservation.status) }}</span></td>
+              <td>{{ reservation.purpose or '—' }}</td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">Brak rezerwacji dla tego sprzętu.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}

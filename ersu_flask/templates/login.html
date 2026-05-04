@@ -1,17 +1,25 @@
 {% extends 'base.html' %}
-{% block title %}Вход{% endblock %}
+{% block title %}Logowanie | ERSU{% endblock %}
 {% block content %}
-<section class="form-wrap card narrow">
-    <h1>Вход</h1>
-    <form method="post" class="form-grid">
-        <label>Email
-            <input type="email" name="email" required>
-        </label>
-        <label>Пароль
-            <input type="password" name="password" required>
-        </label>
-        <button class="btn" type="submit">Войти</button>
-    </form>
-    <p class="muted">Демо-пользователи создаются через seed.sql.</p>
-</section>
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4 p-lg-5">
+        <h1 class="h3 mb-4 text-center">Logowanie do systemu</h1>
+        <form method="post">
+          <div class="mb-3">
+            <label for="email" class="form-label">Adres e-mail</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Hasło</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Zaloguj się</button>
+        </form>
+        <p class="text-center text-muted mt-3 mb-0">Nie masz konta? <a href="{{ url_for('register') }}">Zarejestruj się</a>.</p>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

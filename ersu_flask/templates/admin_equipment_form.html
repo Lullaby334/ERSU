@@ -1,35 +1,51 @@
 {% extends 'base.html' %}
-{% block title %}Админ — форма оборудования{% endblock %}
+{% block title %}{% if item %}Edycja sprzętu{% else %}Nowy sprzęt{% endif %} | ERSU{% endblock %}
 {% block content %}
-<section class="card narrow">
-    <h1>{% if item %}Редактировать{% else %}Добавить{% endif %} оборудование</h1>
-    <form method="post" class="form-grid">
-        <label>Название
-            <input type="text" name="name" value="{{ item.name if item else '' }}" required>
-        </label>
-        <label>Категория
-            <input type="text" name="category" value="{{ item.category if item else '' }}" required>
-        </label>
-        <label>Лаборатория
-            <input type="text" name="laboratory" value="{{ item.laboratory if item else '' }}" required>
-        </label>
-        <label>Серийный номер
-            <input type="text" name="serial_number" value="{{ item.serial_number if item else '' }}" required>
-        </label>
-        <label>URL изображения
-            <input type="text" name="image_url" value="{{ item.image_url if item else '' }}">
-        </label>
-        <label>Статус
-            <select name="status">
-                {% for status in statuses %}
-                    <option value="{{ status }}" {% if item and item.status == status %}selected{% endif %}>{{ status }}</option>
-                {% endfor %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h3 mb-4">{% if item %}Edytuj sprzęt{% else %}Dodaj nowy sprzęt{% endif %}</h1>
+        <form method="post" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Nazwa</label>
+            <input type="text" class="form-control" name="name" value="{{ item.name if item else '' }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Kategoria</label>
+            <input type="text" class="form-control" name="category" value="{{ item.category if item else '' }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Laboratorium</label>
+            <input type="text" class="form-control" name="laboratory" value="{{ item.laboratory if item else '' }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Numer seryjny</label>
+            <input type="text" class="form-control" name="serial_number" value="{{ item.serial_number if item else '' }}" required>
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Adres URL obrazu</label>
+            <input type="url" class="form-control" name="image_url" value="{{ item.image_url if item else '' }}">
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Opis</label>
+            <textarea class="form-control" name="description" rows="4">{{ item.description if item else '' }}</textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status">
+              {% for status in statuses %}
+                <option value="{{ status }}" {% if item and item.status == status %}selected{% endif %}>{{ get_equipment_status_label(status) }}</option>
+              {% endfor %}
             </select>
-        </label>
-        <label>Описание
-            <textarea name="description" rows="5">{{ item.description if item else '' }}</textarea>
-        </label>
-        <button class="btn" type="submit">Сохранить</button>
-    </form>
-</section>
+          </div>
+          <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Zapisz</button>
+            <a href="{{ url_for('admin_equipment_list') }}" class="btn btn-outline-secondary">Anuluj</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

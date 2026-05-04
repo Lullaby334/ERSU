@@ -48,6 +48,12 @@ class Role:
     ADMIN = "ADMIN"
 
     ALL = [STUDENT, EMPLOYEE, LAB_STAFF, ADMIN]
+    LABELS = {
+        STUDENT: "Student",
+        EMPLOYEE: "Pracownik",
+        LAB_STAFF: "Obsługa laboratorium",
+        ADMIN: "Administrator",
+    }
 
 
 class EquipmentStatus:
@@ -57,6 +63,12 @@ class EquipmentStatus:
     OUT_OF_SERVICE = "OUT_OF_SERVICE"
 
     ALL = [AVAILABLE, RESERVED, LOANED, OUT_OF_SERVICE]
+    LABELS = {
+        AVAILABLE: "Dostępny",
+        RESERVED: "Zarezerwowany",
+        LOANED: "Wypożyczony",
+        OUT_OF_SERVICE: "Niedostępny",
+    }
 
 
 class ReservationStatus:
@@ -68,6 +80,13 @@ class ReservationStatus:
 
     ACTIVE = [PENDING, APPROVED]
     ALL = [PENDING, APPROVED, REJECTED, CANCELLED, EXPIRED]
+    LABELS = {
+        PENDING: "Oczekująca",
+        APPROVED: "Zatwierdzona",
+        REJECTED: "Odrzucona",
+        CANCELLED: "Anulowana",
+        EXPIRED: "Wygasła",
+    }
 
 
 class User(UserMixin, db.Model):
@@ -221,8 +240,17 @@ def load_user(user_id: str):
 
 
 @app.context_processor
-def inject_now():
-    return {"now": datetime.utcnow()}
+def inject_globals():
+    return {
+        "now": datetime.utcnow(),
+        "role_labels": Role.LABELS,
+        "equipment_status_labels": EquipmentStatus.LABELS,
+        "reservation_status_labels": ReservationStatus.LABELS,
+        "get_role_label": get_role_label,
+        "get_equipment_status_label": get_equipment_status_label,
+        "get_reservation_status_label": get_reservation_status_label,
+        "translate_status": translate_system_value,
+    }
 
 
 def parse_dt(value: str):
@@ -230,6 +258,27 @@ def parse_dt(value: str):
         return datetime.fromisoformat(value)
     except (TypeError, ValueError):
         return None
+
+
+def get_role_label(role: str) -> str:
+    return Role.LABELS.get(role, role)
+
+
+def get_equipment_status_label(status: str) -> str:
+    return EquipmentStatus.LABELS.get(status, status)
+
+
+def get_reservation_status_label(status: str) -> str:
+    return ReservationStatus.LABELS.get(status, status)
+
+
+def translate_system_value(value: str) -> str:
+    return (
+        Role.LABELS.get(value)
+        or EquipmentStatus.LABELS.get(value)
+        or ReservationStatus.LABELS.get(value)
+        or value
+    )
 
 
 
@@ -324,7 +373,11 @@ def register():
         db.session.add(user)
         db.session.commit()
 
+
         flash("Konto zostało utworzone. Teraz możesz się zalogować.", "success")
+
+        flash("Konto zostało utworzone. Teraz zaloguj się do systemu.", "success")
+
         return redirect(url_for("login"))
 
     return render_template("register.html", roles=[Role.STUDENT, Role.EMPLOYEE])
@@ -341,7 +394,11 @@ def login():
         user = User.query.filter_by(email=email).first()
 
         if not user or not user.check_password(password):
+<<<<<<< HEAD
             flash("Nieprawidłowy e-mail lub hasło.", "danger")
+=======
+            flash("Nieprawidłowy adres e-mail lub hasło.", "danger")
+>>>>>>> d836bda (Translate full UI to Polish)
             return render_template("login.html")
 
         if not user.is_active_account:
@@ -359,7 +416,11 @@ def login():
 @login_required
 def logout():
     logout_user()
+<<<<<<< HEAD
     flash("Zostałeś wylogowany z systemu.", "info")
+=======
+    flash("Wylogowano z systemu.", "info")
+>>>>>>> d836bda (Translate full UI to Polish)
     return redirect(url_for("index"))
 
 
@@ -413,7 +474,11 @@ def equipment_detail(equipment_id):
 
     if request.method == "POST":
         if not current_user.is_authenticated:
+<<<<<<< HEAD
             flash("Aby dokonać rezerwacji, należy się zalogować.", "warning")
+=======
+            flash("Aby dokonać rezerwacji, musisz się zalogować.", "warning")
+>>>>>>> d836bda (Translate full UI to Polish)
             return redirect(url_for("login"))
 
         if current_user.role not in [Role.STUDENT, Role.EMPLOYEE, Role.LAB_STAFF, Role.ADMIN]:
@@ -448,13 +513,22 @@ def equipment_detail(equipment_id):
         equipment.status = EquipmentStatus.RESERVED
         create_notification(
             current_user.id,
+<<<<<<< HEAD
             "Utworzono nową rezerwację",
             f"Rezerwacja dla {equipment.name} została utworzona na okres {start_at:%d.%m.%Y %H:%M} - {end_at:%d.%m.%Y %H:%M}.",
+=======
+            "Utworzono nowy wniosek",
+            f"Rezerwacja dla urządzenia {equipment.name} została utworzona na okres {start_at:%d.%m.%Y %H:%M} - {end_at:%d.%m.%Y %H:%M}.",
+>>>>>>> d836bda (Translate full UI to Polish)
         )
         log_action("RESERVATION_CREATED", "reservation", details=f"equipment={equipment.id}")
         db.session.commit()
 
+<<<<<<< HEAD
         flash("Rezerwacja została utworzona i oczekuje na zatwierdzenie laboratorium.", "success")
+=======
+        flash("Wniosek został utworzony i oczekuje na zatwierdzenie przez laboratorium.", "success")
+>>>>>>> d836bda (Translate full UI to Polish)
         return redirect(url_for("my_reservations"))
 
     reservations = (
@@ -582,7 +656,11 @@ def approve_reservation(reservation_id):
     create_notification(
         reservation.user_id,
         "Rezerwacja zatwierdzona",
+<<<<<<< HEAD
         f"Rezerwacja nr {reservation.id} dla sprzętu {reservation.equipment.name} została zatwierdzona.",
+=======
+        f"Wniosek nr {reservation.id} dotyczący urządzenia {reservation.equipment.name} został zatwierdzony.",
+>>>>>>> d836bda (Translate full UI to Polish)
     )
     log_action("RESERVATION_APPROVED", "reservation", reservation.id)
     db.session.commit()
@@ -608,7 +686,11 @@ def reject_reservation(reservation_id):
     create_notification(
         reservation.user_id,
         "Rezerwacja odrzucona",
+<<<<<<< HEAD
         f"Rezerwacja nr {reservation.id} została odrzucona. Powód: {note}",
+=======
+        f"Wniosek nr {reservation.id} został odrzucony. Powód: {note}",
+>>>>>>> d836bda (Translate full UI to Polish)
     )
     log_action("RESERVATION_REJECTED", "reservation", reservation.id, note)
     db.session.commit()
@@ -671,7 +753,11 @@ def checkin_loan(loan_id):
     create_notification(
         loan.reservation.user_id,
         "Sprzęt został zwrócony",
+<<<<<<< HEAD
         f"Zwrot dla rezerwacji nr {loan.reservation_id} został zarejestrowany. Status sprzętu: {new_status}.",
+=======
+        f"Zwrot dla rezerwacji nr {loan.reservation_id} został zarejestrowany. Status sprzętu: {get_equipment_status_label(new_status)}.",
+>>>>>>> d836bda (Translate full UI to Polish)
     )
     log_action("LOAN_CHECKIN", "loan", loan.id, condition_note)
     db.session.commit()
@@ -796,9 +882,15 @@ def bootstrap_demo_users():
 
     demo_users = [
         (os.getenv("BOOTSTRAP_ADMIN_EMAIL", "admin@ersu.local"), os.getenv("BOOTSTRAP_ADMIN_PASSWORD", "admin123"), "Administrator", Role.ADMIN),
+<<<<<<< HEAD
         (os.getenv("BOOTSTRAP_LAB_EMAIL", "lab@ersu.local"), os.getenv("BOOTSTRAP_LAB_PASSWORD", "lab123"), "Pracownik laboratorium", Role.LAB_STAFF),
         (os.getenv("BOOTSTRAP_STUDENT_EMAIL", "student@ersu.local"), os.getenv("BOOTSTRAP_STUDENT_PASSWORD", "student123"), "Student demo", Role.STUDENT),
         (os.getenv("BOOTSTRAP_EMPLOYEE_EMAIL", "employee@ersu.local"), os.getenv("BOOTSTRAP_EMPLOYEE_PASSWORD", "employee123"), "Pracownik demo", Role.EMPLOYEE),
+=======
+        (os.getenv("BOOTSTRAP_LAB_EMAIL", "lab@ersu.local"), os.getenv("BOOTSTRAP_LAB_PASSWORD", "lab123"), "Obsługa laboratorium", Role.LAB_STAFF),
+        (os.getenv("BOOTSTRAP_STUDENT_EMAIL", "student@ersu.local"), os.getenv("BOOTSTRAP_STUDENT_PASSWORD", "student123"), "Student testowy", Role.STUDENT),
+        (os.getenv("BOOTSTRAP_EMPLOYEE_EMAIL", "employee@ersu.local"), os.getenv("BOOTSTRAP_EMPLOYEE_PASSWORD", "employee123"), "Pracownik testowy", Role.EMPLOYEE),
+>>>>>>> d836bda (Translate full UI to Polish)
     ]
 
     changed = False

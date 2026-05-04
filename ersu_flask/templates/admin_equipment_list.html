@@ -1,45 +1,55 @@
 {% extends 'base.html' %}
-{% block title %}Админ — оборудование{% endblock %}
+{% block title %}Zarządzanie sprzętem | ERSU{% endblock %}
 {% block content %}
-<section class="card">
-    <div class="section-head">
-        <h1>Управление оборудованием</h1>
-        <a class="btn" href="{{ url_for('admin_equipment_new') }}">Добавить оборудование</a>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Sprzęt</h1>
+    <p class="text-muted mb-0">Zarządzanie katalogiem wyposażenia.</p>
+  </div>
+  <a href="{{ url_for('admin_equipment_new') }}" class="btn btn-primary">Dodaj sprzęt</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nazwa</th>
+            <th>Kategoria</th>
+            <th>Laboratorium</th>
+            <th>Numer seryjny</th>
+            <th>Status</th>
+            <th>Akcje</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in equipment %}
+            <tr>
+              <td>#{{ item.id }}</td>
+              <td>{{ item.name }}</td>
+              <td>{{ item.category }}</td>
+              <td>{{ item.laboratory }}</td>
+              <td>{{ item.serial_number }}</td>
+              <td>{{ get_equipment_status_label(item.status) }}</td>
+              <td>
+                <div class="d-flex flex-wrap gap-2">
+                  <a href="{{ url_for('admin_equipment_edit', equipment_id=item.id) }}" class="btn btn-sm btn-outline-primary">Edytuj</a>
+                  <form method="post" action="{{ url_for('admin_equipment_toggle', equipment_id=item.id) }}">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">Zmień status</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">Brak sprzętu w systemie.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Название</th>
-                    <th>Категория</th>
-                    <th>Лаборатория</th>
-                    <th>Статус</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in equipment %}
-                    <tr>
-                        <td>#{{ item.id }}</td>
-                        <td>{{ item.name }}</td>
-                        <td>{{ item.category }}</td>
-                        <td>{{ item.laboratory }}</td>
-                        <td><span class="status {{ item.status|lower }}">{{ item.status }}</span></td>
-                        <td>
-                            <div class="action-stack">
-                                <a class="btn btn-secondary" href="{{ url_for('admin_equipment_edit', equipment_id=item.id) }}">Редактировать</a>
-                                <form method="post" action="{{ url_for('admin_equipment_toggle', equipment_id=item.id) }}">
-                                    <button class="btn btn-danger" type="submit">Переключить статус</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr><td colspan="6">Оборудование отсутствует.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</section>
+  </div>
+</div>
 {% endblock %}

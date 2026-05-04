@@ -1,125 +1,146 @@
 {% extends 'base.html' %}
-{% block title %}Панель лаборатории{% endblock %}
+{% block title %}Panel laboratorium | ERSU{% endblock %}
 {% block content %}
-<section class="card">
-    <h1>Панель лаборатории</h1>
-    <p class="muted">Подтверждение заявок, выдача и прием возвратов.</p>
-</section>
+<h1 class="h3 mb-4">Panel laboratorium</h1>
 
-<section class="card">
-    <h2>Заявки на подтверждение</h2>
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Пользователь</th>
-                    <th>Оборудование</th>
-                    <th>Период</th>
-                    <th>Решение</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for r in pending_reservations %}
-                    <tr>
-                        <td>#{{ r.id }}</td>
-                        <td>{{ r.user.full_name }}</td>
-                        <td>{{ r.equipment.name }}</td>
-                        <td>{{ r.start_at.strftime('%d.%m.%Y %H:%M') }} — {{ r.end_at.strftime('%d.%m.%Y %H:%M') }}</td>
-                        <td>
-                            <div class="action-stack">
-                                <form method="post" action="{{ url_for('approve_reservation', reservation_id=r.id) }}">
-                                    <button class="btn" type="submit">Подтвердить</button>
-                                </form>
-                                <form method="post" action="{{ url_for('reject_reservation', reservation_id=r.id) }}" class="inline-form">
-                                    <input type="text" name="decision_note" placeholder="Причина отказа">
-                                    <button class="btn btn-danger" type="submit">Отклонить</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr><td colspan="5">Нет ожидающих заявок.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <h2 class="h5 mb-3">Oczekujące rezerwacje</h2>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Użytkownik</th>
+            <th>Sprzęt</th>
+            <th>Termin</th>
+            <th>Cel</th>
+            <th>Akcje</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for reservation in pending_reservations %}
+            <tr>
+              <td>#{{ reservation.id }}</td>
+              <td>{{ reservation.user.full_name }}</td>
+              <td>{{ reservation.equipment.name }}</td>
+              <td>{{ reservation.start_at.strftime('%d.%m.%Y %H:%M') }} – {{ reservation.end_at.strftime('%d.%m.%Y %H:%M') }}</td>
+              <td>{{ reservation.purpose or '—' }}</td>
+              <td>
+                <div class="d-flex flex-column gap-2">
+                  <form method="post" action="{{ url_for('approve_reservation', reservation_id=reservation.id) }}">
+                    <button type="submit" class="btn btn-sm btn-success w-100">Zatwierdź</button>
+                  </form>
+                  <form method="post" action="{{ url_for('reject_reservation', reservation_id=reservation.id) }}">
+                    <div class="input-group input-group-sm">
+                      <input type="text" class="form-control" name="decision_note" placeholder="Powód odrzucenia">
+                      <button type="submit" class="btn btn-outline-danger">Odrzuć</button>
+                    </div>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">Brak oczekujących rezerwacji.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-</section>
+  </div>
+</div>
 
-<section class="card">
-    <h2>Подтвержденные заявки для выдачи</h2>
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Пользователь</th>
-                    <th>Оборудование</th>
-                    <th>Период</th>
-                    <th>Выдача</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for r in approved_reservations %}
-                    <tr>
-                        <td>#{{ r.id }}</td>
-                        <td>{{ r.user.full_name }}</td>
-                        <td>{{ r.equipment.name }}</td>
-                        <td>{{ r.start_at.strftime('%d.%m.%Y %H:%M') }} — {{ r.end_at.strftime('%d.%m.%Y %H:%M') }}</td>
-                        <td>
-                            {% if r.loan %}
-                                Уже выдано
-                            {% else %}
-                                <form method="post" action="{{ url_for('checkout_reservation', reservation_id=r.id) }}">
-                                    <button class="btn" type="submit">Выдать</button>
-                                </form>
-                            {% endif %}
-                        </td>
-                    </tr>
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <h2 class="h5 mb-3">Zatwierdzone rezerwacje</h2>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Użytkownik</th>
+            <th>Sprzęt</th>
+            <th>Termin</th>
+            <th>Status</th>
+            <th>Akcja</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for reservation in approved_reservations %}
+            <tr>
+              <td>#{{ reservation.id }}</td>
+              <td>{{ reservation.user.full_name }}</td>
+              <td>{{ reservation.equipment.name }}</td>
+              <td>{{ reservation.start_at.strftime('%d.%m.%Y %H:%M') }} – {{ reservation.end_at.strftime('%d.%m.%Y %H:%M') }}</td>
+              <td>{{ get_reservation_status_label(reservation.status) }}</td>
+              <td>
+                {% if not reservation.loan %}
+                  <form method="post" action="{{ url_for('checkout_reservation', reservation_id=reservation.id) }}">
+                    <button type="submit" class="btn btn-sm btn-primary">Zarejestruj wydanie</button>
+                  </form>
                 {% else %}
-                    <tr><td colspan="5">Нет подтвержденных заявок.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                  <span class="badge text-bg-secondary">Wydano</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">Brak zatwierdzonych rezerwacji.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-</section>
+  </div>
+</div>
 
-<section class="card">
-    <h2>Активные выдачи</h2>
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Оборудование</th>
-                    <th>Пользователь</th>
-                    <th>Срок возврата</th>
-                    <th>Прием возврата</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for loan in active_loans %}
-                    <tr>
-                        <td>#{{ loan.id }}</td>
-                        <td>{{ loan.equipment.name }}</td>
-                        <td>{{ loan.reservation.user.full_name }}</td>
-                        <td>{{ loan.due_at.strftime('%d.%m.%Y %H:%M') }}</td>
-                        <td>
-                            <form method="post" action="{{ url_for('checkin_loan', loan_id=loan.id) }}" class="inline-form">
-                                <input type="text" name="condition_note" placeholder="Состояние / заметки">
-                                <select name="equipment_status">
-                                    <option value="AVAILABLE">AVAILABLE</option>
-                                    <option value="OUT_OF_SERVICE">OUT_OF_SERVICE</option>
-                                </select>
-                                <button class="btn" type="submit">Принять возврат</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr><td colspan="5">Нет активных выдач.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h2 class="h5 mb-3">Aktywne wypożyczenia</h2>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>ID rezerwacji</th>
+            <th>Sprzęt</th>
+            <th>Użytkownik</th>
+            <th>Termin zwrotu</th>
+            <th>Zwrot</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loan in active_loans %}
+            <tr>
+              <td>#{{ loan.reservation_id }}</td>
+              <td>{{ loan.equipment.name }}</td>
+              <td>{{ loan.reservation.user.full_name }}</td>
+              <td>{{ loan.due_at.strftime('%d.%m.%Y %H:%M') }}</td>
+              <td>
+                <form method="post" action="{{ url_for('checkin_loan', loan_id=loan.id) }}" class="row g-2">
+                  <div class="col-md-5">
+                    <input type="text" class="form-control form-control-sm" name="condition_note" placeholder="Uwagi o stanie sprzętu">
+                  </div>
+                  <div class="col-md-4">
+                    <select class="form-select form-select-sm" name="equipment_status">
+                      <option value="AVAILABLE">{{ get_equipment_status_label('AVAILABLE') }}</option>
+                      <option value="OUT_OF_SERVICE">{{ get_equipment_status_label('OUT_OF_SERVICE') }}</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3 d-grid">
+                    <button type="submit" class="btn btn-sm btn-success">Potwierdź zwrot</button>
+                  </div>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">Brak aktywnych wypożyczeń.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-</section>
+  </div>
+</div>
 {% endblock %}
