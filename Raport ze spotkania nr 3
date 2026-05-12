@@ -1,0 +1,11 @@
+Temat spotkania:
+Przygotowanie testów 
+
+Cel spotkania:
+Celem spotkania było ustalenie zakresu testowania oraz przygotowanie podstawowych scenariuszy testowych dla systemu.
+
+Ustalenia:
+Podczas spotkania zdecydowano o przygotowaniu testów obejmujących logowanie, rejestrację, rezerwacje sprzętu, obsługę statusów oraz dostęp do funkcji zależnie od roli użytkownika. Ustalono również, że testy zostaną uruchamiane na osobnej bazie testowej, aby nie wpływały na dane robocze projektu.
+
+Podsumowanie:
+Spotkanie pozwoliło określić zakres testów i przygotować podstawę do automatycznej weryfikacji najważniejszych funkcji systemu.
