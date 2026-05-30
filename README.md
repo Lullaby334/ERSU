@@ -1,1 +1,1 @@
-Yaroslav Yasynetskyi,Heorhii Shchyblykin
+Yaroslav Yasynetskyi,Heorhii Shchyblykin, Piotr Borowiecki
